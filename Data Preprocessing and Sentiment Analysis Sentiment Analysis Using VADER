@@ -1,0 +1,20 @@
+# scripts/preprocess_data.py
+import pandas as pd
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+import nltk
+
+nltk.download("vader_lexicon")
+
+def preprocess_data(filepath):
+    df = pd.read_csv(filepath)
+    sid = SentimentIntensityAnalyzer()
+
+    # Perform sentiment analysis
+    df["sentiment"] = df["text"].apply(lambda x: sid.polarity_scores(x)["compound"])
+    df["label"] = df["sentiment"].apply(lambda x: "positive" if x > 0 else "negative" if x < 0 else "neutral")
+    return df
+
+if __name__ == "__main__":
+    processed_data = preprocess_data("../data/twitter_stock_data.csv")
+    processed_data.to_csv("../data/processed_stock_data.csv", index=False)
+    print("Processed data saved to processed_stock_data.csv")
