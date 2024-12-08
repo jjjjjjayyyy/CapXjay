@@ -1,0 +1,26 @@
+# scripts/scrape_twitter.py
+import tweepy
+import pandas as pd
+
+# Twitter API credentials (replace with your own keys)
+API_KEY = "your_api_key"
+API_SECRET = "your_api_secret"
+ACCESS_TOKEN = "your_access_token"
+ACCESS_SECRET = "your_access_secret"
+
+def authenticate_twitter():
+    auth = tweepy.OAuthHandler(API_KEY, API_SECRET)
+    auth.set_access_token(ACCESS_TOKEN, ACCESS_SECRET)
+    return tweepy.API(auth)
+
+def scrape_tweets(query, max_tweets=100):
+    api = authenticate_twitter()
+    tweets = tweepy.Cursor(api.search_tweets, q=query, lang="en", tweet_mode="extended").items(max_tweets)
+    data = [{"text": tweet.full_text, "created_at": tweet.created_at, "user": tweet.user.screen_name} for tweet in tweets]
+    return pd.DataFrame(data)
+
+if __name__ == "__main__":
+    query = "$AAPL OR #AppleStock"
+    data = scrape_tweets(query, max_tweets=200)
+    data.to_csv("../data/twitter_stock_data.csv", index=False)
+    print("Tweets saved to twitter_stock_data.csv")
